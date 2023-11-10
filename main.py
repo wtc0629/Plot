@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.collections as mcoll
 import matplotlib.path as mpath
+from matplotlib.colors import LinearSegmentedColormap
 
 def colorline(ax, x, y, z=None, cmap=plt.get_cmap('jet'), norm=plt.Normalize(0.0, 1.0),
               linewidth=2, alpha=1.0):
@@ -30,6 +31,10 @@ gestures = ["horizontally", "horizontally fast", "vertically", "vertically fast"
             "square", "square fast", "left circle (anticlockwise)", "right circle (clockwise)",
             "large right circle (clockwise)"]
 
+# Define custom colormap with Red, Yellow, Blue, Green, Pink
+colors = [(1, 0, 0), (1, 1, 0), (0, 0, 1), (0, 1, 0), (1, 0.41, 0.71)]
+cmap = LinearSegmentedColormap.from_list('CustomMap', colors, N=5)
+
 for j in gestures:
     fig, axs = plt.subplots(2, 4, figsize=(12, 6), constrained_layout=True)
 
@@ -38,47 +43,33 @@ for j in gestures:
     for i in range(8):
         nowGesture = j + '_GestureTime' + str(i)
         subset = data.loc[data['process'] == nowGesture]
+        if j == "near to far" or j == "near to far fast":
+            x = subset['gaze_point_3d_y']
+            y = subset['gaze_point_3d_z']
+            axs[i].plot(x, y, label="Original", color='black')
+            z = np.linspace(0, 1, len(x))
+            path = mpath.Path(np.column_stack([x, y]))
+            verts = path.interpolated(steps=3).vertices
+            x, y = verts[:, 0], verts[:, 1]
+            colorline(axs[i], x, y, z, cmap=cmap, linewidth=2, alpha=0.7)
+            axs[i].set_title(nowGesture)
+            axs[i].set_xlabel('gaze_point_3d_y')
+            axs[i].set_ylabel('gaze_point_3d_z')
 
-        x = subset['gaze_point_3d_x']
-        y = subset['gaze_point_3d_y']
+        else:
+            x = subset['gaze_point_3d_x']
+            y = subset['gaze_point_3d_y']
+            axs[i].plot(x, y, label="Original", color='black')
 
-        # Plot the original line
-        axs[i].plot(x, y, label="Original", color='black')
+            z = np.linspace(0, 1, len(x))
+            path = mpath.Path(np.column_stack([x, y]))
+            verts = path.interpolated(steps=3).vertices
+            x, y = verts[:, 0], verts[:, 1]
+            colorline(axs[i], x, y, z, cmap=cmap, linewidth=2, alpha=0.7)
+            axs[i].set_title(nowGesture)
+            axs[i].set_xlabel('gaze_point_3d_x')
+            axs[i].set_ylabel('gaze_point_3d_y')
 
-        # Add colored line segments
-        z = np.linspace(0, 1, len(x))
-        path = mpath.Path(np.column_stack([x, y]))
-        verts = path.interpolated(steps=3).vertices
-        x, y = verts[:, 0], verts[:, 1]
-
-        colorline(axs[i], x, y, z, cmap=plt.get_cmap('tab10'), linewidth=2, alpha=0.7)
-
-        axs[i].set_title(nowGesture)
-        axs[i].set_xlabel('gaze_point_3d_x')
-        axs[i].set_ylabel('gaze_point_3d_y')
-        axs[i].legend()
 
     plt.savefig('C:\\Users\\51004\\Desktop\\MergeCSV\\Dennis\\' + j + '.png')
     plt.close('all')
-
-
-
-# plt.savefig('C:\\Users\\51004\\Desktop\\MergeCSV\\Dennis\\'+j+str(i)+'.png')
-# plt.close()
-
-# print(k)
-# x_values = [[1],[3],[5]]
-# y_values = [[3],[6],[3]]
-
-# plt.plot(x_values, y_values, 'red')
-
-
-# list2 = []
-# for i in range(8):
-#   list2.append('vertically_GestureTime' + str(i))
-
-# test2 = test.loc[test['process'].isin(list2)]
-
-# test2.plot.scatter(x='gaze_normal1_x', y='gaze_normal1_y')
-
-# plt.show()

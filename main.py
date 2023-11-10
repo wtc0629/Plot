@@ -1,48 +1,33 @@
 import pandas as pd
-from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 
-test = pd.read_csv('C:\\Users\\51004\\Desktop\\MergeCSV\\Dennis\\gaze_merged.csv')
+data = pd.read_csv('C:\\Users\\51004\\Desktop\\MergeCSV\\Dennis\\gaze_merged.csv')
 gestures = ["horizontally", "horizontally fast", "vertically", "vertically fast", "near to far", "near to far fast",
             "square", "square fast", "left circle (anticlockwise)", "right circle (clockwise)",
             "large right circle (clockwise)"]
 
 
-# print(test)
 
-
-
-def save_multi_image(filename):
-    pp = PdfPages(filename)
-    fig_nums = plt.get_fignums()
-    figs = [plt.figure(n) for n in fig_nums]
-    for fig in figs:
-        fig.savefig(pp, format='pdf')
-    pp.close()
-
-
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
 for j in gestures:
+    fig, axs = plt.subplots(2, 4, figsize=(12, 6), constrained_layout=True)
+
+    # 将axs展平，方便后续使用
+    axs = axs.flatten()
     nowGestures = ''
-    newtest = []
     for i in range(8):
-        nowGestures = j + '_GestureTime' + str(i)
-        newtest = test.loc[test['process'] == nowGestures]
-        if j == 'near to far' or j == 'near to far fast':
-            newtest.plot(x='gaze_point_3d_y', y='gaze_point_3d_z', title=j + ' y-z ' + str(i))
-         #  newtest.plot(x='gaze_point_3d_x', y='gaze_point_3d_z', title=j + ' x-z ' + str(i))
-        else:
-            newtest.plot(x='gaze_point_3d_x', y='gaze_point_3d_y', title=j + ' x-y ' + str(i))
 
-
-    filename = 'C:\\Users\\51004\\Desktop\\MergeCSV\\Dennis\\' + j + '.pdf'
-    save_multi_image(filename)
+        nowGesture = j + '_GestureTime' + str(i)
+        subset = data.loc[data['process'] == nowGesture]
+        axs[i].plot(subset['gaze_point_3d_x'], subset['gaze_point_3d_y'])
+        axs[i].set_title(nowGesture)
+        axs[i].set_xlabel('gaze_point_3d_x')
+        axs[i].set_ylabel('gaze_point_3d_y')
+    plt.savefig('C:\\Users\\51004\\Desktop\\MergeCSV\\Dennis\\' + j + '.png')
     plt.close('all')
 
 
-
-    # plt.savefig('C:\\Users\\51004\\Desktop\\MergeCSV\\Dennis\\'+j+str(i)+'.png')
-    # plt.close()
+# plt.savefig('C:\\Users\\51004\\Desktop\\MergeCSV\\Dennis\\'+j+str(i)+'.png')
+# plt.close()
 
 # print(k)
 # x_values = [[1],[3],[5]]

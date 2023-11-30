@@ -6,6 +6,7 @@ import matplotlib.collections as mcoll
 import matplotlib.path as mpath
 from matplotlib.colors import LinearSegmentedColormap
 
+
 def colorline(ax, x, y, z=None, cmap=plt.get_cmap('jet'), norm=plt.Normalize(0.0, 1.0),
               linewidth=2, alpha=1.0):
     if z is None:
@@ -25,14 +26,16 @@ def colorline(ax, x, y, z=None, cmap=plt.get_cmap('jet'), norm=plt.Normalize(0.0
     # Return the LineCollection object for creating a legend
     return lc
 
+
 def make_segments(x, y):
     points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
     return segments
 
-tester_name = ["PHD","Dennis","DRP","Philipp","QXR","TMZ","TYT","WTC","WTC2","ZC","YKD","WTC3"]
-for k in range(12):
-    data = pd.read_csv("C:\\Users\\51004\\Desktop\\MergeCSV\\"+tester_name[k] +"\\gaze_merged.csv")
+
+tester_name = ["Felix"]
+for k in range(1):
+    data = pd.read_csv("C:\\Users\\51004\\Desktop\\MergeCSV\\" + tester_name[k] + "\\gaze_merged.csv")
     gestures = ["horizontally", "horizontally fast", "vertically", "vertically fast", "near to far", "near to far fast",
                 "square", "square fast", "left circle (anticlockwise)", "right circle (clockwise)",
                 "large right circle (clockwise)"]
@@ -96,6 +99,58 @@ for k in range(12):
         # Create a legend for the LineCollection objects
         # axs[0].legend(lc_legend, [f'Gesture {i + 1}' for i in range(8)], bbox_to_anchor=(1.05, 0.5), loc='center left', borderaxespad=0.)
 
-        plt.savefig("C:\\Users\\51004\\Desktop\\MergeCSV\\"+tester_name[k]+"\\" + j + '.png', bbox_inches='tight')
+        plt.savefig("C:\\Users\\51004\\Desktop\\MergeCSV\\" + tester_name[k] + "\\" + j + '.png', bbox_inches='tight')
         plt.close('all')
 
+    i = 0
+    fig, axs = plt.subplots(3, 4, figsize=(18, 12), constrained_layout=True)
+    axs = axs.flatten()
+    for j in gestures:
+        if i ==11:
+            break
+
+        # Store LineCollection objects for creating legend
+        lc_legend = []
+
+        nowGesture = j + '_GestureTime1'
+        subset = data.loc[data['process'] == nowGesture]
+        if j == "near to far" or j == "near to far fast":
+            x = subset['gaze_point_3d_y']
+            y = subset['gaze_point_3d_z']
+            axs[i].plot(x, y, label="Original", color='black')
+            z = np.linspace(0, 1, len(x))
+            path = mpath.Path(np.column_stack([x, y]))
+            verts = path.interpolated(steps=3).vertices
+            x, y = verts[:, 0], verts[:, 1]
+            # Use colorline and store the LineCollection objects
+            lc = colorline(axs[i], x, y, z, cmap=cmap, linewidth=2, alpha=0.7)
+            lc_legend.append(lc)
+            axs[i].set_title(nowGesture)
+            axs[i].set_xlabel('gaze_point_3d_y')
+            axs[i].set_ylabel('gaze_point_3d_z')
+        else:
+            x = subset['gaze_point_3d_x']
+            y = subset['gaze_point_3d_y']
+            axs[i].plot(x, y, label="Original", color='black')
+            z = np.linspace(0, 1, len(x))
+            path = mpath.Path(np.column_stack([x, y]))
+            verts = path.interpolated(steps=3).vertices
+            x, y = verts[:, 0], verts[:, 1]
+            # Use colorline and store the LineCollection objects
+            lc = colorline(axs[i], x, y, z, cmap=cmap, linewidth=2, alpha=0.7)
+            lc_legend.append(lc)
+            axs[i].set_title(nowGesture)
+            axs[i].set_xlabel('gaze_point_3d_x')
+            axs[i].set_ylabel('gaze_point_3d_y')
+        i = i + 1
+
+        # Add a common legend for each color
+    axs[11].legend(legend_lines, ['0-2sec', '2-4sec', '4-6sec', '6-8sec', '8-10sec'], bbox_to_anchor=(1.05, 1),
+                  loc='best', borderaxespad=0.)
+
+
+    # Create a legend for the LineCollection objects
+    # axs[0].legend(lc_legend, [f'Gesture {i + 1}' for i in range(8)], bbox_to_anchor=(1.05, 0.5), loc='center left', borderaxespad=0.)
+
+    plt.savefig("C:\\Users\\51004\\Desktop\\MergeCSV\\" + tester_name[k] + "\\all.png", bbox_inches='tight')
+    plt.close('all')
